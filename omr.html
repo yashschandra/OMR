@@ -1,0 +1,30 @@
+<html>
+    <body>
+        <svg id="omr" height="90%" width="90%">
+
+        </svg>
+        <div>
+            <div>
+                <input type="text" id="name" />
+                <input type="number" id="cols" />
+                <select id="options">
+                    <option value="1">A-D</option>
+                    <option value="2">A-Z</option>
+                    <option value="3">0-9</option>
+                </select>
+                <button type="button" onclick="addAttribute()">Add attribute</button>
+            </div>
+            <div id="addQuestion">
+                <button type="button">Add question</button>
+            </div>
+            <div>
+                <button type="button" onclick="shiftElement(1)">UP</button>
+                <button type="button" onclick="shiftElement(2)">DOWN</button>
+                <button type="button" onclick="shiftElement(3)">LEFT</button>
+                <button type="button" onclick="shiftElement(4)">RIGHT</button>
+            </div>
+        </div>
+    </body>
+    <script type="text/javascript" src="data.js" ></script>
+    <script type="text/javascript" src="omr.js" ></script>
+</html>
