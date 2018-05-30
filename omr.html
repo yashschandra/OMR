@@ -5,24 +5,30 @@
         </svg>
         <div>
             <div>
-                <input type="text" id="name" />
-                <input type="number" id="cols" />
-                <select id="options">
+                <input type="text" id="attributeName" />
+                <input type="number" id="attributeCols" />
+                <select id="attributeOptions">
                     <option value="1">A-D</option>
                     <option value="2">A-Z</option>
                     <option value="3">0-9</option>
                 </select>
                 <button type="button" onclick="addAttribute()">Add attribute</button>
             </div>
-            <div id="addQuestion">
-                <button type="button">Add question</button>
-            </div>
             <div>
-                <button type="button" onclick="shiftElement(1)">UP</button>
-                <button type="button" onclick="shiftElement(2)">DOWN</button>
-                <button type="button" onclick="shiftElement(3)">LEFT</button>
-                <button type="button" onclick="shiftElement(4)">RIGHT</button>
-                <button type="button" onclick="saveElement()">SAVE</button>
+                <input type="text" id="questionNumber" />
+                <input type="number" id="questionCols" value="1"/>
+                <select id="questionOptions">
+                    <option value="1">A-D</option>
+                    <option value="2">A-E</option>
+                    <option value="3">P-T</option>
+                    <option value="4">0-9</option>
+                </select>
+                <select id="questionType">
+                    <option value="1">SINGLE/MULTIPLE</option>
+                    <option value="2">INTEGER</option>
+                    <option value="3">MATRIX MATCH</option>
+                </select>
+                <button type="button" onclick="addQuestion()">Add question</button>
             </div>
         </div>
         <div id="elements">

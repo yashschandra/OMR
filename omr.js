@@ -4,9 +4,8 @@ var gridSize = {
     "y": 18
 };
 var SINGLE_CHOICE = 1;
-var MULTIPLE_CHOICE = 2;
-var INTEGER_CHOICE = 3;
-var MATRIX_MATCH = 4;
+var INTEGER_CHOICE = 2;
+var MATRIX_MATCH = 3;
 var UP = 1;
 var DOWN = 2;
 var LEFT = 3;
@@ -14,7 +13,6 @@ var RIGHT = 4;
 var ids = [];
 var attributes = [];
 var questions = [];
-var element = {};
 
 function newElement(type) {
     var ele = document.createElementNS("http://www.w3.org/2000/svg", type);
@@ -142,11 +140,10 @@ function newMatrixMatch(x, y, start, len, number, n) {
     return question;
 }
 
-function newQuestion(x, y, type, start, len, number, n) {
+function newQuestion(id, x, y, type, start, len, number, n) {
     var question;
     switch (type) {
         case SINGLE_CHOICE:
-        case MULTIPLE_CHOICE:
             question = newSingleChoice(x, y, start, len, number);
         break;
         case INTEGER_CHOICE:
@@ -156,14 +153,15 @@ function newQuestion(x, y, type, start, len, number, n) {
             question = newMatrixMatch(x, y, start, len, number, n);
         break;
     }
+    question.setAttribute('id', id);
     return question;
 }
 
 function addAttribute() {
     clearElement();
-    var name = document.getElementById("name").value;
-    var cols = document.getElementById("cols").value;
-    var options = document.getElementById("options").value;
+    var name = document.getElementById("attributeName").value;
+    var cols = document.getElementById("attributeCols").value;
+    var options = document.getElementById("attributeOptions").value;
     var start = "A";
     var len = 0;
     switch (options) {
@@ -183,10 +181,56 @@ function addAttribute() {
         break;
     }
     var x = 0, y = 0;
+    var element = {};
     element["id"] = generateId();
     element["type"] = "attribute";
     element["data"] = {
         name: name,
+        cols: cols,
+        options: options,
+        start: start,
+        len: len,
+        x: x,
+        y: y
+    };
+    addElement(element, true);
+}
+
+function addQuestion() {
+    clearElement();
+    var number = document.getElementById("questionNumber").value;
+    var cols = document.getElementById("questionCols").value;
+    var type = Number(document.getElementById("questionType").value);
+    var options = document.getElementById("questionOptions").value;
+    var start = 'A';
+    var len = 0;
+    switch(options) {
+        case "1":
+            start = 'A';
+            len = 4;
+        break;
+        case "2":
+            start = 'A';
+            len = 5;
+        break;
+        case "3":
+            start = 'P';
+            len = 5;
+        break;
+        case "4":
+            start = '0';
+            len = 10;
+        break;
+        default:
+        break;
+    }
+    var x = 0, y = 0;
+    var element = {};
+    element["id"] = generateId();
+    element["type"] = "question";
+    element["data"] = {
+        number: number,
+        type:type,
         cols: cols,
         options: options,
         start: start,
@@ -211,11 +255,6 @@ function generateId() {
     return generateId();
 }
 
-function modifyOMR() {
-    removeElement();
-    addElement();
-}
-
 function removeElement(id) {
     var ele = document.getElementById(String(id));
     console.log(ele, id);
@@ -228,11 +267,17 @@ function removeElement(id) {
             break;
         }
     }
+    for(var i=0; i<questions.length; i++) {
+        if(questions[i].id == id) {
+            questions.splice(i, 1);
+            break;
+        }
+    }
 }
 
-function clearElement() {
-    removeElement();
-    element = {};
+function clearElement(id) {
+    removeElement(id);
+    refreshElementList();
 }
 
 function addElement(element, newElement) {
@@ -243,6 +288,8 @@ function addElement(element, newElement) {
             attributes.push(element);
         break;
         case "question":
+            e = newQuestion(element.id, element.data.x, element.data.y, element.data.type, element.data.start, element.data.len, element.data.number, element.data.cols);
+            questions.push(element);
         break;
         default:
         break;
@@ -258,6 +305,9 @@ function refreshElementList() {
     for(var i=0; i<attributes.length; i++) {
         html += "<div id='"+ attributes[i].id +"_div'>ATTRIBUTE : "+ attributes[i].data.name+" &nbsp; "+buttonHTML(attributes[i].id)+"</div>";
     }
+    for(var i=0; i<questions.length; i++) {
+        html += "<div id='"+ questions[i].id +"_div'>QUESTION : "+ questions[i].data.number+" &nbsp; "+buttonHTML(questions[i].id)+"</div>";
+    }
     document.getElementById("elements").innerHTML = html;
 }
 
@@ -267,26 +317,8 @@ function buttonHTML(id) {
     html += '<button type="button" onclick="shiftElement('+id+','+DOWN+')">DOWN</button>';
     html += '<button type="button" onclick="shiftElement('+id+','+LEFT+')">LEFT</button>';
     html += '<button type="button" onclick="shiftElement('+id+','+RIGHT+')">RIGHT</button>';
+    html += '<button type="button" onclick="clearElement('+id+')">REMOVE</button>';
     return html;
-}
-
-function saveElement() {
-    if(element) {
-        switch(element.type) {
-            case "attribute":
-                attributes.push(element);
-                console.log(attributes);
-            break;
-            case "question":
-                questions.push(element);
-            break;
-            default:
-            break;
-        }
-        var ele = document.getElementById(element.id);
-        omr.appendChild(ele);
-        element = {};
-    }
 }
 
 function shiftElement(id, dir) {
@@ -294,6 +326,12 @@ function shiftElement(id, dir) {
     for(var i=0; i<attributes.length; i++) {
         if(attributes[i].id == id) {
             ele = attributes[i];
+            break;
+        }
+    }
+    for(var i=0; i<questions.length; i++) {
+        if(questions[i].id == id) {
+            ele = questions[i];
             break;
         }
     }
