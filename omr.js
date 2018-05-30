@@ -12,6 +12,9 @@ var DOWN = 2;
 var LEFT = 3;
 var RIGHT = 4;
 var ids = [];
+var attributes = [];
+var questions = [];
+var element = {};
 
 function newElement(type) {
     var ele = document.createElementNS("http://www.w3.org/2000/svg", type);
@@ -157,6 +160,7 @@ function newQuestion(x, y, type, start, len, number, n) {
 }
 
 function addAttribute() {
+    clearElement();
     var name = document.getElementById("name").value;
     var cols = document.getElementById("cols").value;
     var options = document.getElementById("options").value;
@@ -190,7 +194,7 @@ function addAttribute() {
         x: x,
         y: y
     };
-    modifyOMR();
+    addElement(element, true);
 }
 
 function generateId() {
@@ -212,19 +216,31 @@ function modifyOMR() {
     addElement();
 }
 
-function removeElement() {
-    var ele = document.getElementById(String(element.id));
-    console.log(ele, element.id);
+function removeElement(id) {
+    var ele = document.getElementById(String(id));
+    console.log(ele, id);
     if(ele) {
         ele.parentNode.removeChild(ele);
     }
+    for(var i=0; i<attributes.length; i++) {
+        if(attributes[i].id == id) {
+            attributes.splice(i, 1);
+            break;
+        }
+    }
 }
 
-function addElement() {
+function clearElement() {
+    removeElement();
+    element = {};
+}
+
+function addElement(element, newElement) {
     var e;
     switch (element.type) {
         case "attribute":
             e = newAttribute(element.id, element.data.x, element.data.y, element.data.start, element.data.len, element.data.name, element.data.cols);
+            attributes.push(element);
         break;
         case "question":
         break;
@@ -232,32 +248,75 @@ function addElement() {
         break;
     }
     omr.appendChild(e);
+    if(newElement) {
+        refreshElementList();
+    }
 }
 
-function shiftElement(dir) {
+function refreshElementList() {
+    var html = '';
+    for(var i=0; i<attributes.length; i++) {
+        html += "<div id='"+ attributes[i].id +"_div'>ATTRIBUTE : "+ attributes[i].data.name+" &nbsp; "+buttonHTML(attributes[i].id)+"</div>";
+    }
+    document.getElementById("elements").innerHTML = html;
+}
+
+function buttonHTML(id) {
+    var html = '';
+    html += '<button type="button" onclick="shiftElement('+id+','+UP+')">UP</button>';
+    html += '<button type="button" onclick="shiftElement('+id+','+DOWN+')">DOWN</button>';
+    html += '<button type="button" onclick="shiftElement('+id+','+LEFT+')">LEFT</button>';
+    html += '<button type="button" onclick="shiftElement('+id+','+RIGHT+')">RIGHT</button>';
+    return html;
+}
+
+function saveElement() {
+    if(element) {
+        switch(element.type) {
+            case "attribute":
+                attributes.push(element);
+                console.log(attributes);
+            break;
+            case "question":
+                questions.push(element);
+            break;
+            default:
+            break;
+        }
+        var ele = document.getElementById(element.id);
+        omr.appendChild(ele);
+        element = {};
+    }
+}
+
+function shiftElement(id, dir) {
+    var ele;
+    for(var i=0; i<attributes.length; i++) {
+        if(attributes[i].id == id) {
+            ele = attributes[i];
+            break;
+        }
+    }
     switch(dir) {
         case UP:
-            element.data.y = element.data.y - gridSize.y;
+            ele.data.y = ele.data.y - gridSize.y;
         break;
         case DOWN:
-            element.data.y = element.data.y + gridSize.y;
+            ele.data.y = ele.data.y + gridSize.y;
         break;
         case LEFT:
-            element.data.x = element.data.x - gridSize.x;
+            ele.data.x = ele.data.x - gridSize.x;
         break;
         case RIGHT:
-            element.data.x = element.data.x + gridSize.x;
+            ele.data.x = ele.data.x + gridSize.x;
         break;
         default:
         break;
     }
-    modifyOMR();
+    modifyElement(ele);
 }
 
-/*omr.appendChild(newAttribute(100, 100, "A", 26, "NAME", 20));
-omr.appendChild(newAttribute(700, 100, "0", 10, "NUMBER", 10));
-omr.appendChild(newAttribute(900, 100, "A", 4, "SET", 1));
-omr.appendChild(newQuestion(1000, 100, SINGLE_CHOICE, "A", 5, 1, 1));
-omr.appendChild(newQuestion(1000, 200, MULTIPLE_CHOICE, "A", 5, 1, 1));
-omr.appendChild(newQuestion(500, 300, INTEGER_CHOICE, "0", 10, 1, 1));
-omr.appendChild(newQuestion(1100, 300, MATRIX_MATCH, "P", 5, 1, 4));*/
+function modifyElement(ele) {
+    removeElement(ele.id);
+    addElement(ele, false);
+}
